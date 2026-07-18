@@ -59,8 +59,8 @@ services:
     read_only: true
     volumes:
       - lila-runtime:/opt/lila/runtime
-      # ReactiveMongo extracts its native epoll library here, so this mount
-      # must remain executable even though the container root is read-only.
+      # General temporary files may stay on a hardened noexec mount. The
+      # entrypoint extracts ReactiveMongo's native library under lila-runtime.
       - lila-tmp:/tmp
     depends_on:
       mongodb:

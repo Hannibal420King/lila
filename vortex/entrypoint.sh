@@ -2,6 +2,7 @@
 set -eu
 
 runtime_dir=/opt/lila/runtime
+native_workdir="${runtime_dir}/netty-native"
 secrets_file="${runtime_dir}/secrets.conf"
 
 ensure_secrets() {
@@ -25,20 +26,23 @@ ensure_secrets() {
 case "${1:-lila}" in
   lila)
     ensure_secrets
+    rm -rf "${native_workdir}"
+    mkdir -m 0700 "${native_workdir}"
     exec /opt/lila/bin/lila \
       -J-Xms256m \
       -J-Xmx3072m \
       -J-XX:+ExitOnOutOfMemoryError \
+      -Dreactivemongo.io.netty.native.workdir="${native_workdir}" \
       -Dconfig.file=/opt/lila/conf/application.conf \
       -Dlogger.file=/opt/lila/vortex/logger.xml
     ;;
   gateway)
     mkdir -p /tmp/nginx/client /tmp/nginx/proxy /tmp/nginx/fastcgi /tmp/nginx/uwsgi /tmp/nginx/scgi
-    exec nginx -c /opt/lila/vortex/nginx.conf -g 'daemon off;'
+    exec nginx -e /dev/stderr -c /opt/lila/vortex/nginx.conf -g 'daemon off;'
     ;;
   gateway-dev)
     mkdir -p /tmp/nginx/client /tmp/nginx/proxy /tmp/nginx/fastcgi /tmp/nginx/uwsgi /tmp/nginx/scgi
-    exec nginx -c /opt/lila/vortex/nginx.dev.conf -g 'daemon off;'
+    exec nginx -e /dev/stderr -c /opt/lila/vortex/nginx.dev.conf -g 'daemon off;'
     ;;
   *)
     echo "Unsupported Lila process: $1" >&2

@@ -4,6 +4,7 @@ import test from "node:test";
 import vm from "node:vm";
 
 const source = await readFile(new URL("../browser/adapter.js", import.meta.url), "utf8");
+const entrypoint = await readFile(new URL("../entrypoint.sh", import.meta.url), "utf8");
 
 async function loadStandaloneAdapter() {
   const listeners = new Map();
@@ -67,4 +68,15 @@ test("rejects foreign, credentialed, mutable, and insecure SDK locations", async
 test("does not end play sessions on normal page transitions", () => {
   assert.doesNotMatch(source, /beforeunload|pagehide|unload/);
   assert.match(source, /client\.play\.end\("quit"\)/);
+});
+
+test("uses an executable persistent directory for native libraries and stderr for nginx", () => {
+  assert.match(entrypoint, /native_workdir="\$\{runtime_dir\}\/netty-native"/);
+  assert.match(entrypoint, /rm -rf "\$\{native_workdir\}"/);
+  assert.match(entrypoint, /mkdir -m 0700 "\$\{native_workdir\}"/);
+  assert.match(
+    entrypoint,
+    /-Dreactivemongo\.io\.netty\.native\.workdir="\$\{native_workdir\}"/,
+  );
+  assert.equal((entrypoint.match(/nginx -e \/dev\/stderr/g) || []).length, 2);
 });
