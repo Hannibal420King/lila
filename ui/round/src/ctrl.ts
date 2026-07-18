@@ -454,6 +454,12 @@ export default class RoundController implements MoveRootCtrl {
       }
       blur.onMove();
       pubsub.emit('ply', this.ply);
+      if (!d.player.spectator && playedColor === d.player.color)
+        window.dispatchEvent(
+          new CustomEvent('lila:vortex-move-accepted', {
+            detail: { gameId: d.game.id, ply: this.ply, variant: d.game.variant.key },
+          }),
+        );
     }
     d.game.threefold = !!o.threefold;
     d.game.fiftyMoves = !!o.fiftyMoves;
@@ -591,6 +597,16 @@ export default class RoundController implements MoveRootCtrl {
       // Delay 'victory' & 'defeat' sounds to avoid overlapping with 'checkmate' sound
       if (o.status.name === 'mate') site.sound.playAndDelayMateResultIfNecessary(key);
       else site.sound.play(key);
+      window.dispatchEvent(
+        new CustomEvent('lila:vortex-game-completed', {
+          detail: {
+            gameId: d.game.id,
+            variant: d.game.variant.key,
+            result: o.winner ? (d.player.color === o.winner ? 'win' : 'loss') : 'draw',
+            termination: o.status.name,
+          },
+        }),
+      );
     }
     this.onTimeTrouble(false);
     endGameView();

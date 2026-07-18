@@ -1,0 +1,151 @@
+name: vortex-lila
+
+services:
+  mongodb:
+    image: cgr.dev/chainguard/mongodb@sha256:97010cebe00fa41880dfa1dbe4f2c93a4793f24dd803aa4b8cc6e83fa71d6fa3
+    command: ["--bind_ip_all", "--dbpath", "/data/db", "--wiredTigerCacheSizeGB", "1"]
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=64m
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test: ["CMD", "/usr/bin/mongo", "--quiet", "--host", "127.0.0.1", "--eval", "db.adminCommand('ping').ok"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+    cpus: 2.0
+    mem_limit: 2048m
+    pids_limit: 512
+    restart: unless-stopped
+
+  redis:
+    image: cgr.dev/chainguard/redis@sha256:ade64e9abd4954dd2656f19c9e75c8409a4f2f2557333f334c6f71d1edd5a0e9
+    command: ["--appendonly", "no", "--dir", "/tmp"]
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=64m
+    healthcheck:
+      test: ["CMD", "/usr/bin/redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    cpus: 0.5
+    mem_limit: 512m
+    pids_limit: 128
+    restart: unless-stopped
+
+  lila:
+    build:
+      context: .
+      args:
+        VCS_REF: local-vortex-v2
+        BUILD_DATE: "2026-07-18"
+    image: vortex-lila:local
+    command: ["lila"]
+    environment:
+      LILA_DOMAIN: 127.0.0.1:18084
+      LILA_URL: http://127.0.0.1:18084
+      LILA_SOCKET_DOMAIN: 127.0.0.1:18084
+      LILA_MONGODB_URI: mongodb://mongodb:27017/lichess?appName=lila
+      LILA_REDIS_URI: redis://redis
+      ENABLE_RATE_LIMITING: "false"
+      VORTEX_PUBLIC_URL: http://127.0.0.1:18084
+      VORTEX_SDK_URL: http://127.0.0.1:18084/sdk/v1/vortex-game-sdk.js
+      VORTEX_DEV_IDENTITY: "true"
+      VORTEX_DEV_PLAYER_ID: 00000000-0000-4000-8000-000000000010
+      VORTEX_DEV_HANDLE: vortex-player
+      VORTEX_DEV_DISPLAY_NAME: Vortex Player
+    read_only: true
+    volumes:
+      - lila-runtime:/opt/lila/runtime
+      # ReactiveMongo extracts its native epoll library here, so this mount
+      # must remain executable even though the container root is read-only.
+      - lila-tmp:/tmp
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "--show-error", "http://127.0.0.1:9663/api/vortex/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 60
+      start_period: 20s
+    cpus: 4.0
+    mem_limit: 4096m
+    pids_limit: 2048
+    restart: unless-stopped
+
+  lila-ws:
+    image: ghcr.io/lichess-org/lila-ws@sha256:64cc112993a4f6e764249e13487ae19c4e06e96705984fc25e5f0e3c1950b43d
+    platform: linux/amd64
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - >-
+        mkdir -p /tmp/logs && exec /opt/docker/bin/lila-ws
+        -J-Xms128m
+        -J-Xmx768m
+        -J-XX:+ExitOnOutOfMemoryError
+        -J--enable-native-access=ALL-UNNAMED
+        -Dcsrf.origin=http://127.0.0.1:18084
+        -Dkamon.enabled=false
+        -Dmongo.uri=mongodb://mongodb:27017/lichess?appName=lila-ws
+        -Dredis.uri=redis://redis
+    working_dir: /tmp
+    read_only: true
+    volumes:
+      - lila-ws-tmp:/tmp
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    cpus: 1.0
+    mem_limit: 1024m
+    pids_limit: 512
+    healthcheck:
+      test: ["CMD", "/usr/bin/bash", "-c", "exec 3<>/dev/tcp/127.0.0.1/9664"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 10s
+    restart: unless-stopped
+
+  gateway:
+    image: vortex-lila:local
+    command: ["gateway-dev"]
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=128m
+    ports:
+      - 127.0.0.1:18084:8080
+    depends_on:
+      lila:
+        condition: service_healthy
+      lila-ws:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "--show-error", "http://127.0.0.1:8080/healthz"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+    cpus: 0.5
+    mem_limit: 512m
+    pids_limit: 128
+    restart: unless-stopped
+    networks:
+      - default
+      - edge
+
+volumes:
+  mongo-data:
+  lila-runtime:
+  lila-tmp:
+  lila-ws-tmp:
+
+networks:
+  default:
+    internal: true
+  edge:

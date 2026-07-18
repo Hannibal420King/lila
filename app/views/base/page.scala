@@ -63,6 +63,7 @@ object page:
           ,
           cssTag("lib.theme.all"),
           cssTag("site"),
+          link(rel := "stylesheet", href := "/vortex/v1/adapter.css"),
           pref.is3d.option(cssTag("lib.board-3d")),
           ctx.data.inquiry.isDefined.option(cssTag("mod.inquiry")),
           ctx.impersonatedBy.isDefined.option(cssTag("mod.impersonate")),
@@ -163,6 +164,7 @@ object page:
             )
           )(p.transform(p.body)),
           bottomHtml,
+          script(tpe := "module", src := "/vortex/v1/adapter.js"),
           ctx.nonce.map(inlineJs(_, allModules)),
           modulesInit(allModules, ctx.nonce),
           p.pageModule.map { mod => frag(jsonScript(mod.data)) }

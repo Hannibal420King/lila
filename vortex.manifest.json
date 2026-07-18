@@ -1,0 +1,295 @@
+{
+  "schemaVersion": "1.0",
+  "revision": 1,
+  "requiredScopes": [
+    "identity.basic",
+    "play.write",
+    "events.write",
+    "gamification.read",
+    "rewards.read"
+  ],
+  "optionalScopes": [],
+  "events": [
+    {
+      "key": "lila.move.accepted",
+      "version": 1,
+      "displayName": "Chess move accepted",
+      "description": "The Lila round client received a server-confirmed move made by the current Vortex player in an active game.",
+      "valueType": "COUNTER",
+      "aggregation": "SUM",
+      "source": "GAME_SESSION",
+      "attributes": {
+        "type": "object",
+        "properties": {
+          "variant": {
+            "type": "string",
+            "enum": ["standard", "chess960", "kingOfTheHill", "threeCheck", "antichess", "atomic", "horde", "racingKings", "crazyhouse"]
+          }
+        },
+        "required": ["variant"],
+        "additionalProperties": false
+      }
+    },
+    {
+      "key": "lila.game.completed",
+      "version": 1,
+      "displayName": "Chess game completed",
+      "description": "The Lila round client received the server-confirmed terminal state of a played game and reports only the player's result and termination category.",
+      "valueType": "COUNTER",
+      "aggregation": "SUM",
+      "source": "GAME_SESSION",
+      "attributes": {
+        "type": "object",
+        "properties": {
+          "variant": {
+            "type": "string",
+            "enum": ["standard", "chess960", "kingOfTheHill", "threeCheck", "antichess", "atomic", "horde", "racingKings", "crazyhouse"]
+          },
+          "result": {
+            "type": "string",
+            "enum": ["win", "loss", "draw"]
+          },
+          "termination": {
+            "type": "string",
+            "maxLength": 32
+          }
+        },
+        "required": ["variant", "result", "termination"],
+        "additionalProperties": false
+      }
+    }
+  ],
+  "notificationTemplates": [],
+  "presenceStates": [],
+  "invitePaths": ["/", "/training", "/practice"],
+  "deployment": {
+    "schemaVersion": "1.0",
+    "gateway": {
+      "service": "gateway",
+      "port": "http"
+    },
+    "services": [
+      {
+        "name": "mongodb",
+        "image": {
+          "source": "OCI",
+          "reference": "cgr.dev/chainguard/mongodb@sha256:97010cebe00fa41880dfa1dbe4f2c93a4793f24dd803aa4b8cc6e83fa71d6fa3"
+        },
+        "command": ["--bind_ip_all", "--dbpath", "/data/db", "--wiredTigerCacheSizeGB", "1"],
+        "environment": {},
+        "ports": [
+          {
+            "name": "mongodb",
+            "containerPort": 27017,
+            "protocol": "TCP",
+            "exposure": "INTERNAL"
+          }
+        ],
+        "healthCheck": {
+          "protocol": "TCP",
+          "port": "mongodb",
+          "initialDelaySeconds": 3,
+          "intervalSeconds": 5,
+          "timeoutSeconds": 3,
+          "retries": 30
+        },
+        "resources": {
+          "cpuCores": 2,
+          "memoryMb": 2048,
+          "pidsLimit": 512
+        },
+        "mounts": [
+          {
+            "volume": "mongo-data",
+            "target": "/data/db",
+            "readOnly": false
+          }
+        ],
+        "dependsOn": [],
+        "readOnlyRootfs": true,
+        "stopGraceSeconds": 60
+      },
+      {
+        "name": "redis",
+        "image": {
+          "source": "OCI",
+          "reference": "cgr.dev/chainguard/redis@sha256:ade64e9abd4954dd2656f19c9e75c8409a4f2f2557333f334c6f71d1edd5a0e9"
+        },
+        "command": ["--appendonly", "no", "--dir", "/tmp"],
+        "environment": {},
+        "ports": [
+          {
+            "name": "redis",
+            "containerPort": 6379,
+            "protocol": "TCP",
+            "exposure": "INTERNAL"
+          }
+        ],
+        "healthCheck": {
+          "protocol": "TCP",
+          "port": "redis",
+          "initialDelaySeconds": 1,
+          "intervalSeconds": 5,
+          "timeoutSeconds": 3,
+          "retries": 20
+        },
+        "resources": {
+          "cpuCores": 0.5,
+          "memoryMb": 512,
+          "pidsLimit": 128
+        },
+        "mounts": [],
+        "dependsOn": [],
+        "readOnlyRootfs": true,
+        "stopGraceSeconds": 20
+      },
+      {
+        "name": "lila",
+        "image": {
+          "source": "APP"
+        },
+        "command": ["lila"],
+        "environment": {
+          "LILA_DOMAIN": "lila.localhost:8180",
+          "LILA_URL": "http://lila.localhost:8180",
+          "LILA_SOCKET_DOMAIN": "lila.localhost:8180",
+          "LILA_MONGODB_URI": "mongodb://mongodb:27017/lichess?appName=lila",
+          "LILA_REDIS_URI": "redis://redis",
+          "ENABLE_RATE_LIMITING": "true"
+        },
+        "vortexEnvironment": true,
+        "ports": [
+          {
+            "name": "http",
+            "containerPort": 9663,
+            "protocol": "TCP",
+            "exposure": "INTERNAL"
+          }
+        ],
+        "healthCheck": {
+          "protocol": "HTTP",
+          "port": "http",
+          "path": "/api/vortex/health",
+          "initialDelaySeconds": 20,
+          "intervalSeconds": 5,
+          "timeoutSeconds": 3,
+          "retries": 30
+        },
+        "resources": {
+          "cpuCores": 4,
+          "memoryMb": 4096,
+          "pidsLimit": 2048
+        },
+        "mounts": [
+          {
+            "volume": "lila-runtime",
+            "target": "/opt/lila/runtime",
+            "readOnly": false
+          },
+          {
+            "volume": "lila-tmp",
+            "target": "/tmp",
+            "readOnly": false
+          }
+        ],
+        "dependsOn": ["mongodb", "redis"],
+        "readOnlyRootfs": true,
+        "stopGraceSeconds": 60
+      },
+      {
+        "name": "lila-ws",
+        "image": {
+          "source": "OCI",
+          "reference": "ghcr.io/lichess-org/lila-ws@sha256:64cc112993a4f6e764249e13487ae19c4e06e96705984fc25e5f0e3c1950b43d"
+        },
+        "entrypoint": ["/bin/sh", "-c"],
+        "command": ["mkdir -p /tmp/logs && exec /opt/docker/bin/lila-ws -J-Xms128m -J-Xmx768m -J-XX:+ExitOnOutOfMemoryError -J--enable-native-access=ALL-UNNAMED -Dcsrf.origin=http://lila.localhost:8180 -Dkamon.enabled=false -Dmongo.uri=mongodb://mongodb:27017/lichess?appName=lila-ws -Dredis.uri=redis://redis"],
+        "workingDirectory": "/tmp",
+        "environment": {},
+        "ports": [
+          {
+            "name": "websocket",
+            "containerPort": 9664,
+            "protocol": "TCP",
+            "exposure": "INTERNAL"
+          }
+        ],
+        "healthCheck": {
+          "protocol": "TCP",
+          "port": "websocket",
+          "initialDelaySeconds": 10,
+          "intervalSeconds": 5,
+          "timeoutSeconds": 3,
+          "retries": 30
+        },
+        "resources": {
+          "cpuCores": 1,
+          "memoryMb": 1024,
+          "pidsLimit": 512
+        },
+        "mounts": [
+          {
+            "volume": "lila-ws-tmp",
+            "target": "/tmp",
+            "readOnly": false
+          }
+        ],
+        "dependsOn": ["mongodb", "redis"],
+        "readOnlyRootfs": true,
+        "stopGraceSeconds": 30
+      },
+      {
+        "name": "gateway",
+        "image": {
+          "source": "APP"
+        },
+        "command": ["gateway"],
+        "environment": {},
+        "ports": [
+          {
+            "name": "http",
+            "containerPort": 8080,
+            "protocol": "TCP",
+            "exposure": "INTERNAL"
+          }
+        ],
+        "healthCheck": {
+          "protocol": "HTTP",
+          "port": "http",
+          "path": "/healthz",
+          "initialDelaySeconds": 5,
+          "intervalSeconds": 5,
+          "timeoutSeconds": 3,
+          "retries": 30
+        },
+        "resources": {
+          "cpuCores": 0.5,
+          "memoryMb": 512,
+          "pidsLimit": 128
+        },
+        "mounts": [],
+        "dependsOn": ["lila", "lila-ws"],
+        "readOnlyRootfs": true,
+        "stopGraceSeconds": 20
+      }
+    ],
+    "volumes": [
+      {
+        "name": "mongo-data",
+        "kind": "PERSISTENT"
+      },
+      {
+        "name": "lila-runtime",
+        "kind": "PERSISTENT"
+      },
+      {
+        "name": "lila-tmp",
+        "kind": "EPHEMERAL"
+      },
+      {
+        "name": "lila-ws-tmp",
+        "kind": "EPHEMERAL"
+      }
+    ]
+  }
+}

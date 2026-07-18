@@ -1,5 +1,10 @@
 # Run `./lila.sh playRoutes` after modifying this file
 
+# Vortex managed runtime integration
+GET  /api/vortex/config  controllers.Vortex.config
+POST /api/vortex/session controllers.Vortex.session
+GET  /api/vortex/health  controllers.Vortex.health
+
 # Lobby
 GET   /                                controllers.Lobby.home
 GET   /lobby/seeks                     controllers.Lobby.seeks

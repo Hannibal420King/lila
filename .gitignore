@@ -61,8 +61,7 @@ instance.lock
 # IntelliJ auto-generated files
 .idea
 
-# Docker-compose / docker sbt
-/docker-compose.yml
+# Docker sbt
 /?
 
 # deploy bearer
@@ -74,3 +73,5 @@ instance.lock
 /blob-report/
 /playwright/.cache/
 /playwright/.auth/
+/.playwright-cli/
+/output/

@@ -1,0 +1,124 @@
+{
+  "schemaVersion": "1.0",
+  "game": {
+    "slug": "lila",
+    "name": "Lila"
+  },
+  "status": "complete",
+  "assets": [
+    {
+      "kind": "ICON",
+      "filename": "icon.png",
+      "width": 1024,
+      "height": 1024,
+      "byteSize": 1743008,
+      "altText": "A cream stone chess knight stands before a muted green halo on graphite.",
+      "sha256": "7f3a9f11b236c72a3308b0ba93d0735e5590a7206bb2e9b3cebc1aeb9d2a0267",
+      "generationPrompt": "Create one completely original premium square game icon for the open-source chess platform Lila. Square 1:1 composition: an elegant sculptural chess knight in warm cream stone on a graphite chessboard tile, encircled by a subtle muted forest-green halo, refined soft studio lighting, understated intelligent premium aesthetic, high contrast and readable at small size, centered with generous safe padding for circular and rounded-square crops. Do not use or imitate any existing Lichess logo, horse mark, or upstream artwork. Absolutely no words, letters, numbers, algebraic chess notation, titles, logos, watermarks, borders, UI screenshots, brands, trademarks, or copied artwork. Suitable for final 1024x1024 PNG.",
+      "provenance": {
+        "type": "GENERATED_ORIGINAL",
+        "upstreamReference": null
+      },
+      "license": {
+        "identifier": "LicenseRef-Vortex-Generated-Original",
+        "copyrightHolder": "Hannibal420King",
+        "notes": "Original catalog artwork generated for this fork; no upstream artwork was used."
+      }
+    },
+    {
+      "kind": "CARD",
+      "filename": "card.webp",
+      "width": 1536,
+      "height": 864,
+      "byteSize": 135468,
+      "altText": "Cream and graphite knights face across an elegant chessboard with muted green accents.",
+      "sha256": "14b297f973582c25f2eb3a56b55bd783b544aea629f003bce679ef6e176f1b4b",
+      "generationPrompt": "Create one completely original cinematic 16:9 promotional card artwork for the open-source chess platform Lila, intended for final 1536x864 WebP. An elegant graphite-and-cream chessboard centered in frame with two original sculptural knights facing across a thoughtful midgame position, muted forest-green felt accents, soft dramatic gallery lighting, premium quiet competitive atmosphere, sophisticated realistic dimensional art, centered focal pieces and safe crop margins. Do not use or imitate any existing Lichess logo or upstream artwork. Absolutely no words, letters, numbers, algebraic notation, titles, logos, Vortex branding, watermarks, borders, UI screenshots, brands, trademarks, or copied artwork.",
+      "provenance": {
+        "type": "GENERATED_ORIGINAL",
+        "upstreamReference": null
+      },
+      "license": {
+        "identifier": "LicenseRef-Vortex-Generated-Original",
+        "copyrightHolder": "Hannibal420King",
+        "notes": "Original catalog artwork generated for this fork; no upstream artwork was used."
+      }
+    },
+    {
+      "kind": "HERO",
+      "filename": "hero.webp",
+      "width": 2048,
+      "height": 896,
+      "byteSize": 87238,
+      "altText": "A cream knight and thoughtful chess position fill the right of a dark graphite banner.",
+      "sha256": "b5b84d4ad9515d46e235d2692aebc85a5b87d1ed3b2936361b28356bdfe151ef",
+      "generationPrompt": "Create one completely original ultra-wide hero banner for the open-source chess platform Lila, composed for final 2048x896 (16:7) WebP. Preserve the LEFT half as dark, low-detail graphite negative space for title and controls. On the RIGHT third, show an elegant cream stone chess knight and a partial graphite-and-cream board in a thoughtful midgame position, subtle muted forest-green felt accents, refined cinematic gallery light, premium quiet competitive atmosphere and crisp safe cropping. Do not use or imitate any existing Lichess logo, horse mark, or upstream artwork. Absolutely no words, letters, numbers, algebraic notation, titles, logos, Vortex branding, watermarks, borders, UI screenshots, brands, trademarks, or copied artwork.",
+      "provenance": {
+        "type": "GENERATED_ORIGINAL",
+        "upstreamReference": null
+      },
+      "license": {
+        "identifier": "LicenseRef-Vortex-Generated-Original",
+        "copyrightHolder": "Hannibal420King",
+        "notes": "Original catalog artwork generated for this fork; no upstream artwork was used."
+      }
+    },
+    {
+      "kind": "SCREENSHOT",
+      "filename": "screenshots/01.webp",
+      "width": 1920,
+      "height": 1080,
+      "byteSize": 75062,
+      "altText": "The Vortex-mapped player opens with e4 against an anonymous opponent in a live chess game.",
+      "sha256": "1bcf62a2f26b14a1904f48d139568079db7f375ee04ead7a8f8e973d91c752e1",
+      "generationPrompt": null,
+      "provenance": {
+        "type": "REAL_GAMEPLAY_CAPTURE",
+        "upstreamReference": "https://github.com/Hannibal420King/lila/tree/vortex-v2 based on commit 994ec0a36664f5b5339a5e8490a30d4ea3c94145; captured from the live local Vortex-adapted stack on 2026-07-18."
+      },
+      "license": {
+        "identifier": "LicenseRef-Lila-Gameplay-Capture",
+        "copyrightHolder": "The lila authors, credited upstream asset authors, and Hannibal420King",
+        "notes": "Real gameplay capture from this AGPLv3+-licensed lila fork; bundled visual assets retain the licenses and attributions recorded in COPYING.md. Not AI-generated."
+      }
+    },
+    {
+      "kind": "SCREENSHOT",
+      "filename": "screenshots/02.webp",
+      "width": 1920,
+      "height": 1080,
+      "byteSize": 75748,
+      "altText": "A live Ruy Lopez position shows both players, the move list, and the Vortex player panel.",
+      "sha256": "722145da58728700a38cf2434fc3bcc48cc50fa030f2ec34d1cd1fd05335f9ef",
+      "generationPrompt": null,
+      "provenance": {
+        "type": "REAL_GAMEPLAY_CAPTURE",
+        "upstreamReference": "https://github.com/Hannibal420King/lila/tree/vortex-v2 based on commit 994ec0a36664f5b5339a5e8490a30d4ea3c94145; captured from the live local Vortex-adapted stack on 2026-07-18."
+      },
+      "license": {
+        "identifier": "LicenseRef-Lila-Gameplay-Capture",
+        "copyrightHolder": "The lila authors, credited upstream asset authors, and Hannibal420King",
+        "notes": "Real gameplay capture from this AGPLv3+-licensed lila fork; bundled visual assets retain the licenses and attributions recorded in COPYING.md. Not AI-generated."
+      }
+    },
+    {
+      "kind": "SCREENSHOT",
+      "filename": "screenshots/03.webp",
+      "width": 1920,
+      "height": 1080,
+      "byteSize": 79150,
+      "altText": "The completed live chess game shows Black victorious after White resigns.",
+      "sha256": "7078a4c3d1541867e844c2bf7b8a899d5c2e2d0ac19fa2a0586ae0303bbaefff",
+      "generationPrompt": null,
+      "provenance": {
+        "type": "REAL_GAMEPLAY_CAPTURE",
+        "upstreamReference": "https://github.com/Hannibal420King/lila/tree/vortex-v2 based on commit 994ec0a36664f5b5339a5e8490a30d4ea3c94145; captured from the live local Vortex-adapted stack on 2026-07-18."
+      },
+      "license": {
+        "identifier": "LicenseRef-Lila-Gameplay-Capture",
+        "copyrightHolder": "The lila authors, credited upstream asset authors, and Hannibal420King",
+        "notes": "Real gameplay capture from this AGPLv3+-licensed lila fork; bundled visual assets retain the licenses and attributions recorded in COPYING.md. Not AI-generated."
+      }
+    }
+  ]
+}

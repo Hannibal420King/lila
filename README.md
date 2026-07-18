@@ -41,6 +41,36 @@ See [lichess.org/source](https://lichess.org/source) for a list of repositories.
 [Join us on Discord](https://discord.gg/lichess) for more info.
 Use [GitHub issues](https://github.com/lichess-org/lila/issues) for bug reports and feature requests.
 
+## Vortex v2 fork
+
+The `vortex-v2` branch packages Lila as an isolated Vortex application without
+replacing its native chess UI. Vortex supplies an app-pairwise, signed identity;
+the server verifies that assertion and creates a passwordless mapped Lila
+account on first launch. Browser code receives only the narrow public Vortex
+origin and hosted SDK URL.
+
+The production manifest runs a five-service stack: nginx gateway, Lila,
+lila-ws, MongoDB, and Redis. OCI sidecars are digest-pinned, MongoDB and runtime
+secrets are persistent, roots are read-only, and the declared resource budget
+is 8 GiB. The image build itself needs more headroom; allocate at least 12 GiB
+to Docker before running:
+
+```console
+docker compose build lila
+docker compose up -d
+```
+
+The local development fixture is then available at
+`http://127.0.0.1:18084`. It exists only for isolated smoke testing; managed
+Vortex deployments disable the fixture and require signed edge identity.
+The published [`vortex.manifest.json`](vortex.manifest.json) targets the
+isolated Vortex environment at `http://lila.localhost:8180`. Before production
+promotion, create a new manifest revision that changes `LILA_DOMAIN`,
+`LILA_URL`, `LILA_SOCKET_DOMAIN`, and the lila-ws `csrf.origin` together to the
+same HTTPS production origin (for example `https://lila.armandlubbe.com`).
+Deployment details and third-party notices are in
+[`vortex/ATTRIBUTION.md`](vortex/ATTRIBUTION.md).
+
 ## Installation
 
 ```
