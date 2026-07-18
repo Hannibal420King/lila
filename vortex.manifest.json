@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0",
-  "revision": 5,
+  "revision": 6,
   "requiredScopes": [
     "identity.basic",
     "play.write",

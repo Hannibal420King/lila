@@ -47,7 +47,9 @@ The `vortex-v2` branch packages Lila as an isolated Vortex application without
 replacing its native chess UI. Vortex supplies an app-pairwise, signed identity;
 the server verifies that assertion and creates a passwordless mapped Lila
 account on first launch. Browser code receives only the narrow public Vortex
-origin and hosted SDK URL.
+origin and hosted SDK URL. When configured, the validated public origin is also
+added to only the page's `script-src` and `connect-src` directives so the hosted
+SDK can load and communicate; standalone Lila leaves those directives unchanged.
 
 The production manifest runs a five-service stack: nginx gateway, Lila,
 lila-ws, MongoDB, and Redis. OCI sidecars are digest-pinned, MongoDB and runtime

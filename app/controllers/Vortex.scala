@@ -16,18 +16,21 @@ import lila.core.userId.UserName
 import lila.db.dsl.{ *, given }
 import lila.security.IsPwned
 import lila.web.VortexIdentity as VerifiedIdentity
+import lila.web.VortexPublicOrigin
 
 final class Vortex(env: Env) extends LilaController(env):
 
   private val identityColl = env.mongo.mainDb(CollName("vortex_identity"))
 
   def config = Action:
-    val publicUrl = sys.env.get("VORTEX_PUBLIC_URL").map(_.stripSuffix("/")).filter(_.nonEmpty)
+    val publicUrl = VortexPublicOrigin.configured()
     val sdkUrl = sys.env.get("VORTEX_SDK_URL").filter(_.nonEmpty)
     val result = (publicUrl, sdkUrl) match
-      case (None, None) => Ok(Json.obj("enabled" -> false))
-      case (Some(origin), Some(sdk)) =>
+      case (Right(None), None) => Ok(Json.obj("enabled" -> false))
+      case (Right(Some(origin)), Some(sdk)) =>
         Ok(Json.obj("enabled" -> true, "vortexOrigin" -> origin, "sdkUrl" -> sdk))
+      case (Left(_), _) =>
+        ServiceUnavailable(Json.obj("enabled" -> false, "error" -> "Vortex public origin is invalid"))
       case _ =>
         ServiceUnavailable(Json.obj("enabled" -> false, "error" -> "Vortex configuration is incomplete"))
     result.withHeaders(CACHE_CONTROL -> "no-store")

@@ -4,10 +4,11 @@ import lila.core.config.AssetDomain
 
 object ContentSecurityPolicy:
 
-  def page(assetDomain: AssetDomain, connectSrcs: List[String]) =
+  def page(assetDomain: AssetDomain, connectSrcs: List[String], vortexOrigin: Option[String] = none) =
+    val vortexSrc = vortexOrigin.toList
     lila.ui.ContentSecurityPolicy(
       defaultSrc = List("'self'", assetDomain.value),
-      connectSrc = "'self'" :: "blob:" :: "data:" :: connectSrcs,
+      connectSrc = "'self'" :: "blob:" :: "data:" :: connectSrcs ::: vortexSrc,
       styleSrc = List("'self'", "'unsafe-inline'", assetDomain.value),
       frameSrc = List(
         "'self'",
@@ -20,7 +21,7 @@ object ContentSecurityPolicy:
       workerSrc = List("'self'", assetDomain.value, "blob:"),
       imgSrc = List("'self'", "blob:", "data:", "*"),
       mediaSrc = List("'self'", "blob:", assetDomain.value),
-      scriptSrc = List("'self'", assetDomain.value),
+      scriptSrc = List("'self'", assetDomain.value) ::: vortexSrc,
       fontSrc = List("'self'", assetDomain.value),
       baseUri = List("'none'")
     )

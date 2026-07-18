@@ -49,7 +49,7 @@ RUN printf 'app.version.commit = "%s"\napp.version.date = "%s"\n' "${VCS_REF}" "
   && cp conf/application.conf.default conf/application.conf \
   && sed -i 's/\r$//' ./lila.sh \
   && chmod +x ./lila.sh \
-  && ./lila.sh -Depoll=true "web/testOnly lila.web.VortexIdentityTest;stage"
+  && ./lila.sh -Depoll=true "web/testOnly lila.web.VortexIdentityTest lila.web.VortexPublicOriginTest;stage"
 
 FROM eclipse-temurin:21-jre-jammy@sha256:d63bd8d9b171999cbed8576f2c76e874dd4856791a358536e5c4d407e77edc13 AS runtime
 

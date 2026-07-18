@@ -50,9 +50,11 @@ trait AssetFullHelper:
     // include both ws and wss when insecure because requests may come through a secure proxy
     val localDev =
       (!ctx.req.secure).so(List("http://127.0.0.1:3000", "http://localhost:8666"))
+    val vortexOrigin = VortexPublicOrigin.configured().toOption.flatten
     lila.web.ContentSecurityPolicy.page(
       netConfig.assetDomain,
-      netConfig.assetDomain.value :: sockets ::: analyseEndpoints.explorer :: analyseEndpoints.tablebase :: localDev
+      netConfig.assetDomain.value :: sockets ::: analyseEndpoints.explorer :: analyseEndpoints.tablebase :: localDev,
+      vortexOrigin
     )
 
   def embedCsp: ContentSecurityPolicy =
