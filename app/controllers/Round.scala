@@ -114,9 +114,14 @@ final class Round(
   def watcher(gameId: GameId, color: Color) = Open:
     if req.client.isCrawler
     then
-      FoundPage(env.round.proxyRepo.gameIfPresentOrFetch(gameId)): game =>
-        for _ <- gameC.preloadUsers(game)
-        yield views.round.crawler(game.pov(color))
+      env.round.proxyRepo
+        .gameIfPresentOrFetch(gameId)
+        .flatMap:
+          case Some(game) =>
+            Ok.async:
+              for _ <- gameC.preloadUsers(game)
+              yield views.round.crawler(game.pov(color))
+          case None => challengeC.showId(gameId.into(lila.challenge.ChallengeId))
     else
       env.round.proxyRepo
         .pov(gameId, color)

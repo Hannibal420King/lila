@@ -24,7 +24,7 @@ const tmpVolume = manifest.deployment.volumes.find(
 );
 
 test("declares a dedicated executable lila-ws runtime volume", () => {
-  assert.equal(manifest.revision, 6);
+  assert.equal(manifest.revision, 7);
   assert.deepEqual(runtimeVolume, {
     name: "lila-ws-runtime",
     kind: "PERSISTENT",
