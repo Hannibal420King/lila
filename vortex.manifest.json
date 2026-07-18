@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0",
-  "revision": 4,
+  "revision": 5,
   "requiredScopes": [
     "identity.basic",
     "play.write",
@@ -203,9 +203,11 @@
           "reference": "ghcr.io/lichess-org/lila-ws@sha256:64cc112993a4f6e764249e13487ae19c4e06e96705984fc25e5f0e3c1950b43d"
         },
         "entrypoint": ["/bin/sh", "-c"],
-        "command": ["mkdir -p /tmp/logs && exec /opt/docker/bin/lila-ws -J-Xms128m -J-Xmx768m -J-XX:+ExitOnOutOfMemoryError -J--enable-native-access=ALL-UNNAMED -Dcsrf.origin=http://lila.localhost:8180 -Dkamon.enabled=false -Dmongo.uri=mongodb://mongodb:27017/lichess?appName=lila-ws -Dredis.uri=redis://redis"],
+        "command": ["runtime_dir=\"${LILA_WS_NATIVE_WORKDIR:-}\" && [ \"${runtime_dir}\" = /opt/lila-ws-runtime/netty-native ] && rm -rf -- \"${runtime_dir}\" && mkdir -m 0700 -- \"${runtime_dir}\" && mkdir -p /tmp/logs && exec /opt/docker/bin/lila-ws -J-Xms128m -J-Xmx768m -J-XX:+ExitOnOutOfMemoryError -J--enable-native-access=ALL-UNNAMED -Dreactivemongo.io.netty.native.workdir=\"${runtime_dir}\" -Dio.netty.native.workdir=\"${runtime_dir}\" -Dcsrf.origin=http://lila.localhost:8180 -Dkamon.enabled=false -Dmongo.uri=mongodb://mongodb:27017/lichess?appName=lila-ws -Dredis.uri=redis://redis"],
         "workingDirectory": "/tmp",
-        "environment": {},
+        "environment": {
+          "LILA_WS_NATIVE_WORKDIR": "/opt/lila-ws-runtime/netty-native"
+        },
         "ports": [
           {
             "name": "websocket",
@@ -228,6 +230,11 @@
           "pidsLimit": 512
         },
         "mounts": [
+          {
+            "volume": "lila-ws-runtime",
+            "target": "/opt/lila-ws-runtime",
+            "readOnly": false
+          },
           {
             "volume": "lila-ws-tmp",
             "target": "/tmp",
@@ -291,6 +298,13 @@
       {
         "name": "lila-tmp",
         "kind": "EPHEMERAL"
+      },
+      {
+        "name": "lila-ws-runtime",
+        "kind": "PERSISTENT",
+        "quotaBytes": "268435456",
+        "ownerUid": 1001,
+        "ownerGid": 1001
       },
       {
         "name": "lila-ws-tmp",

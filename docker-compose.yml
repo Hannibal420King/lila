@@ -78,26 +78,60 @@ services:
     pids_limit: 2048
     restart: unless-stopped
 
+  lila-ws-runtime-init:
+    image: ghcr.io/lichess-org/lila-ws@sha256:64cc112993a4f6e764249e13487ae19c4e06e96705984fc25e5f0e3c1950b43d
+    platform: linux/amd64
+    user: "0:0"
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - >-
+        chown 1001:1001 /opt/lila-ws-runtime &&
+        chmod 0750 /opt/lila-ws-runtime
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - FOWNER
+    network_mode: none
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    volumes:
+      - lila-ws-runtime:/opt/lila-ws-runtime
+    restart: "no"
+
   lila-ws:
     image: ghcr.io/lichess-org/lila-ws@sha256:64cc112993a4f6e764249e13487ae19c4e06e96705984fc25e5f0e3c1950b43d
     platform: linux/amd64
     entrypoint: ["/bin/sh", "-c"]
     command:
       - >-
-        mkdir -p /tmp/logs && exec /opt/docker/bin/lila-ws
+        runtime_dir="$${LILA_WS_NATIVE_WORKDIR:-}" &&
+        [ "$${runtime_dir}" = /opt/lila-ws-runtime/netty-native ] &&
+        rm -rf -- "$${runtime_dir}" &&
+        mkdir -m 0700 -- "$${runtime_dir}" &&
+        mkdir -p /tmp/logs &&
+        exec /opt/docker/bin/lila-ws
         -J-Xms128m
         -J-Xmx768m
         -J-XX:+ExitOnOutOfMemoryError
         -J--enable-native-access=ALL-UNNAMED
+        -Dreactivemongo.io.netty.native.workdir="$${runtime_dir}"
+        -Dio.netty.native.workdir="$${runtime_dir}"
         -Dcsrf.origin=http://127.0.0.1:18084
         -Dkamon.enabled=false
         -Dmongo.uri=mongodb://mongodb:27017/lichess?appName=lila-ws
         -Dredis.uri=redis://redis
     working_dir: /tmp
+    environment:
+      LILA_WS_NATIVE_WORKDIR: /opt/lila-ws-runtime/netty-native
     read_only: true
     volumes:
+      - lila-ws-runtime:/opt/lila-ws-runtime
       - lila-ws-tmp:/tmp
     depends_on:
+      lila-ws-runtime-init:
+        condition: service_completed_successfully
       mongodb:
         condition: service_healthy
       redis:
@@ -143,6 +177,7 @@ volumes:
   mongo-data:
   lila-runtime:
   lila-tmp:
+  lila-ws-runtime:
   lila-ws-tmp:
 
 networks:

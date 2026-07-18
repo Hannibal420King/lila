@@ -52,8 +52,12 @@ origin and hosted SDK URL.
 The production manifest runs a five-service stack: nginx gateway, Lila,
 lila-ws, MongoDB, and Redis. OCI sidecars are digest-pinned, MongoDB and runtime
 secrets are persistent, roots are read-only, and the declared resource budget
-is 8 GiB. The image build itself needs more headroom; allocate at least 12 GiB
-to Docker before running:
+is 8 GiB. Both JVM services extract Netty native libraries into app-owned,
+executable runtime volumes while their general `/tmp` mounts remain `noexec`.
+The lila-ws runtime subtree is recreated with mode `0700` on each start; the
+managed volume belongs to UID 1001, matching the pinned image's unprivileged
+runtime user. The image build itself needs more headroom; allocate at least 12
+GiB to Docker before running:
 
 ```console
 docker compose build lila
@@ -61,8 +65,11 @@ docker compose up -d
 ```
 
 The local development fixture is then available at
-`http://127.0.0.1:18084`. It exists only for isolated smoke testing; managed
-Vortex deployments disable the fixture and require signed edge identity.
+`http://127.0.0.1:18084`. A one-shot Compose helper initializes the lila-ws
+volume as `1001:1001`; lila-ws itself continues to run as the image-declared
+`1001:0` user and needs no root-only permission changes. The fixture exists only
+for isolated smoke testing; managed Vortex deployments disable it and require
+signed edge identity.
 The published [`vortex.manifest.json`](vortex.manifest.json) targets the
 isolated Vortex environment at `http://lila.localhost:8180`. Before production
 promotion, create a new manifest revision that changes `LILA_DOMAIN`,
