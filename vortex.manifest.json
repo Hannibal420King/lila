@@ -276,11 +276,17 @@
     "volumes": [
       {
         "name": "mongo-data",
-        "kind": "PERSISTENT"
+        "kind": "PERSISTENT",
+        "quotaBytes": "8589934592",
+        "ownerUid": 65532,
+        "ownerGid": 65532
       },
       {
         "name": "lila-runtime",
-        "kind": "PERSISTENT"
+        "kind": "PERSISTENT",
+        "quotaBytes": "1073741824",
+        "ownerUid": 10001,
+        "ownerGid": 10001
       },
       {
         "name": "lila-tmp",
