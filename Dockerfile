@@ -62,6 +62,11 @@ ARG GID=10001
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends ca-certificates curl nginx \
+  && if [ -e /var/log/nginx/error.log ] && [ ! -f /var/log/nginx/error.log ] && [ ! -L /var/log/nginx/error.log ]; then \
+       echo '/var/log/nginx/error.log is not a replaceable file' >&2; \
+       exit 1; \
+     fi \
+  && ln -sfn /dev/stderr /var/log/nginx/error.log \
   && rm -rf /var/lib/apt/lists/* /usr/share/doc /usr/share/man \
   && groupadd --gid "${GID}" lila \
   && useradd --uid "${UID}" --gid "${GID}" --home-dir /opt/lila --no-create-home --shell /usr/sbin/nologin lila

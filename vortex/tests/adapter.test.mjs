@@ -5,6 +5,7 @@ import vm from "node:vm";
 
 const source = await readFile(new URL("../browser/adapter.js", import.meta.url), "utf8");
 const entrypoint = await readFile(new URL("../entrypoint.sh", import.meta.url), "utf8");
+const dockerfile = await readFile(new URL("../../Dockerfile", import.meta.url), "utf8");
 
 async function loadStandaloneAdapter() {
   const listeners = new Map();
@@ -70,7 +71,7 @@ test("does not end play sessions on normal page transitions", () => {
   assert.match(source, /client\.play\.end\("quit"\)/);
 });
 
-test("uses an executable persistent directory for native libraries and stderr for nginx", () => {
+test("uses an executable persistent directory for all Netty native libraries", () => {
   assert.match(entrypoint, /native_workdir="\$\{runtime_dir\}\/netty-native"/);
   assert.match(entrypoint, /rm -rf "\$\{native_workdir\}"/);
   assert.match(entrypoint, /mkdir -m 0700 "\$\{native_workdir\}"/);
@@ -78,5 +79,11 @@ test("uses an executable persistent directory for native libraries and stderr fo
     entrypoint,
     /-Dreactivemongo\.io\.netty\.native\.workdir="\$\{native_workdir\}"/,
   );
-  assert.equal((entrypoint.match(/nginx -e \/dev\/stderr/g) || []).length, 2);
+  assert.match(entrypoint, /-Dio\.netty\.native\.workdir="\$\{native_workdir\}"/);
+});
+
+test("starts nginx without the unsupported error-log flag", () => {
+  assert.equal((entrypoint.match(/exec nginx -c /g) || []).length, 2);
+  assert.doesNotMatch(entrypoint, /nginx -e(?:\s|$)/);
+  assert.match(dockerfile, /ln -sfn \/dev\/stderr \/var\/log\/nginx\/error\.log/);
 });

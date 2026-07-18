@@ -33,16 +33,17 @@ case "${1:-lila}" in
       -J-Xmx3072m \
       -J-XX:+ExitOnOutOfMemoryError \
       -Dreactivemongo.io.netty.native.workdir="${native_workdir}" \
+      -Dio.netty.native.workdir="${native_workdir}" \
       -Dconfig.file=/opt/lila/conf/application.conf \
       -Dlogger.file=/opt/lila/vortex/logger.xml
     ;;
   gateway)
     mkdir -p /tmp/nginx/client /tmp/nginx/proxy /tmp/nginx/fastcgi /tmp/nginx/uwsgi /tmp/nginx/scgi
-    exec nginx -e /dev/stderr -c /opt/lila/vortex/nginx.conf -g 'daemon off;'
+    exec nginx -c /opt/lila/vortex/nginx.conf -g 'daemon off;'
     ;;
   gateway-dev)
     mkdir -p /tmp/nginx/client /tmp/nginx/proxy /tmp/nginx/fastcgi /tmp/nginx/uwsgi /tmp/nginx/scgi
-    exec nginx -e /dev/stderr -c /opt/lila/vortex/nginx.dev.conf -g 'daemon off;'
+    exec nginx -c /opt/lila/vortex/nginx.dev.conf -g 'daemon off;'
     ;;
   *)
     echo "Unsupported Lila process: $1" >&2
