@@ -30,7 +30,7 @@ case "${1:-lila}" in
     mkdir -m 0700 "${native_workdir}"
     exec /opt/lila/bin/lila \
       -J-Xms256m \
-      -J-Xmx3072m \
+      -J-Xmx1024m \
       -J-XX:+ExitOnOutOfMemoryError \
       -Dreactivemongo.io.netty.native.workdir="${native_workdir}" \
       -Dio.netty.native.workdir="${native_workdir}" \

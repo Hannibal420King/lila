@@ -3,7 +3,7 @@ name: vortex-lila
 services:
   mongodb:
     image: cgr.dev/chainguard/mongodb@sha256:97010cebe00fa41880dfa1dbe4f2c93a4793f24dd803aa4b8cc6e83fa71d6fa3
-    command: ["--bind_ip_all", "--dbpath", "/data/db", "--wiredTigerCacheSizeGB", "1"]
+    command: ["--bind_ip_all", "--dbpath", "/data/db", "--wiredTigerCacheSizeGB", "0.25"]
     read_only: true
     tmpfs:
       - /tmp:rw,noexec,nosuid,size=64m
@@ -14,9 +14,9 @@ services:
       interval: 5s
       timeout: 3s
       retries: 30
-    cpus: 2.0
-    mem_limit: 2048m
-    pids_limit: 512
+    cpus: 0.5
+    mem_limit: 768m
+    pids_limit: 256
     restart: unless-stopped
 
   redis:
@@ -30,9 +30,9 @@ services:
       interval: 5s
       timeout: 3s
       retries: 20
-    cpus: 0.5
-    mem_limit: 512m
-    pids_limit: 128
+    cpus: 0.1
+    mem_limit: 128m
+    pids_limit: 64
     restart: unless-stopped
 
   lila:
@@ -73,9 +73,9 @@ services:
       timeout: 3s
       retries: 60
       start_period: 20s
-    cpus: 4.0
-    mem_limit: 4096m
-    pids_limit: 2048
+    cpus: 2.0
+    mem_limit: 2048m
+    pids_limit: 256
     restart: unless-stopped
 
   lila-ws-runtime-init:
@@ -113,7 +113,7 @@ services:
         mkdir -p /tmp/logs &&
         exec /opt/docker/bin/lila-ws
         -J-Xms128m
-        -J-Xmx768m
+        -J-Xmx384m
         -J-XX:+ExitOnOutOfMemoryError
         -J--enable-native-access=ALL-UNNAMED
         -Dreactivemongo.io.netty.native.workdir="$${runtime_dir}"
@@ -136,9 +136,9 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-    cpus: 1.0
-    mem_limit: 1024m
-    pids_limit: 512
+    cpus: 0.5
+    mem_limit: 512m
+    pids_limit: 128
     healthcheck:
       test: ["CMD", "/usr/bin/bash", "-c", "exec 3<>/dev/tcp/127.0.0.1/9664"]
       interval: 5s
@@ -165,9 +165,9 @@ services:
       interval: 5s
       timeout: 3s
       retries: 30
-    cpus: 0.5
-    mem_limit: 512m
-    pids_limit: 128
+    cpus: 0.1
+    mem_limit: 128m
+    pids_limit: 32
     restart: unless-stopped
     networks:
       - default

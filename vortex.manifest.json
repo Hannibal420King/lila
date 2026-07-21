@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0",
-  "revision": 7,
+  "revision": 8,
   "requiredScopes": [
     "identity.basic",
     "play.write",
@@ -75,7 +75,7 @@
           "source": "OCI",
           "reference": "cgr.dev/chainguard/mongodb@sha256:97010cebe00fa41880dfa1dbe4f2c93a4793f24dd803aa4b8cc6e83fa71d6fa3"
         },
-        "command": ["--bind_ip_all", "--dbpath", "/data/db", "--wiredTigerCacheSizeGB", "1"],
+        "command": ["--bind_ip_all", "--dbpath", "/data/db", "--wiredTigerCacheSizeGB", "0.25"],
         "environment": {},
         "ports": [
           {
@@ -94,9 +94,9 @@
           "retries": 30
         },
         "resources": {
-          "cpuCores": 2,
-          "memoryMb": 2048,
-          "pidsLimit": 512
+          "cpuCores": 0.5,
+          "memoryMb": 768,
+          "pidsLimit": 256
         },
         "mounts": [
           {
@@ -134,9 +134,9 @@
           "retries": 20
         },
         "resources": {
-          "cpuCores": 0.5,
-          "memoryMb": 512,
-          "pidsLimit": 128
+          "cpuCores": 0.1,
+          "memoryMb": 128,
+          "pidsLimit": 64
         },
         "mounts": [],
         "dependsOn": [],
@@ -150,9 +150,9 @@
         },
         "command": ["lila"],
         "environment": {
-          "LILA_DOMAIN": "lila.localhost:8180",
-          "LILA_URL": "http://lila.localhost:8180",
-          "LILA_SOCKET_DOMAIN": "lila.localhost:8180",
+          "LILA_DOMAIN": "lila.armandlubbe.com",
+          "LILA_URL": "https://lila.armandlubbe.com",
+          "LILA_SOCKET_DOMAIN": "lila.armandlubbe.com",
           "LILA_MONGODB_URI": "mongodb://mongodb:27017/lichess?appName=lila",
           "LILA_REDIS_URI": "redis://redis",
           "ENABLE_RATE_LIMITING": "true"
@@ -176,9 +176,9 @@
           "retries": 30
         },
         "resources": {
-          "cpuCores": 4,
-          "memoryMb": 4096,
-          "pidsLimit": 2048
+          "cpuCores": 2,
+          "memoryMb": 2048,
+          "pidsLimit": 256
         },
         "mounts": [
           {
@@ -203,7 +203,7 @@
           "reference": "ghcr.io/lichess-org/lila-ws@sha256:64cc112993a4f6e764249e13487ae19c4e06e96705984fc25e5f0e3c1950b43d"
         },
         "entrypoint": ["/bin/sh", "-c"],
-        "command": ["runtime_dir=\"${LILA_WS_NATIVE_WORKDIR:-}\" && [ \"${runtime_dir}\" = /opt/lila-ws-runtime/netty-native ] && rm -rf -- \"${runtime_dir}\" && mkdir -m 0700 -- \"${runtime_dir}\" && mkdir -p /tmp/logs && exec /opt/docker/bin/lila-ws -J-Xms128m -J-Xmx768m -J-XX:+ExitOnOutOfMemoryError -J--enable-native-access=ALL-UNNAMED -Dreactivemongo.io.netty.native.workdir=\"${runtime_dir}\" -Dio.netty.native.workdir=\"${runtime_dir}\" -Dcsrf.origin=http://lila.localhost:8180 -Dkamon.enabled=false -Dmongo.uri=mongodb://mongodb:27017/lichess?appName=lila-ws -Dredis.uri=redis://redis"],
+        "command": ["runtime_dir=\"${LILA_WS_NATIVE_WORKDIR:-}\" && [ \"${runtime_dir}\" = /opt/lila-ws-runtime/netty-native ] && rm -rf -- \"${runtime_dir}\" && mkdir -m 0700 -- \"${runtime_dir}\" && mkdir -p /tmp/logs && exec /opt/docker/bin/lila-ws -J-Xms128m -J-Xmx384m -J-XX:+ExitOnOutOfMemoryError -J--enable-native-access=ALL-UNNAMED -Dreactivemongo.io.netty.native.workdir=\"${runtime_dir}\" -Dio.netty.native.workdir=\"${runtime_dir}\" -Dcsrf.origin=https://lila.armandlubbe.com -Dkamon.enabled=false -Dmongo.uri=mongodb://mongodb:27017/lichess?appName=lila-ws -Dredis.uri=redis://redis"],
         "workingDirectory": "/tmp",
         "environment": {
           "LILA_WS_NATIVE_WORKDIR": "/opt/lila-ws-runtime/netty-native"
@@ -225,9 +225,9 @@
           "retries": 30
         },
         "resources": {
-          "cpuCores": 1,
-          "memoryMb": 1024,
-          "pidsLimit": 512
+          "cpuCores": 0.5,
+          "memoryMb": 512,
+          "pidsLimit": 128
         },
         "mounts": [
           {
@@ -270,9 +270,9 @@
           "retries": 30
         },
         "resources": {
-          "cpuCores": 0.5,
-          "memoryMb": 512,
-          "pidsLimit": 128
+          "cpuCores": 0.1,
+          "memoryMb": 128,
+          "pidsLimit": 32
         },
         "mounts": [],
         "dependsOn": ["lila", "lila-ws"],
